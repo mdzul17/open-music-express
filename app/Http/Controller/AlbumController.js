@@ -3,8 +3,6 @@ const path = require("path");
 const fs = require("fs");
 const Response = require("../Utils/HttpResponse");
 const { Pool } = require("pg");
-const autoBind = require("auto-bind");
-
 const pool = new Pool();
 
 const AlbumController = {
