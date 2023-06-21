@@ -10,7 +10,7 @@ const SongController = {
   getSongs: async (req, res) => {
     try {
       const query = {
-        text: "SELECT * FROM song",
+        text: "SELECT * FROM songs",
       };
 
       const songs = await pool.query(query);
@@ -26,7 +26,7 @@ const SongController = {
       const { id } = req.params;
 
       const query = {
-        text: "SELECT * FROM song where id = $1",
+        text: "SELECT * FROM songs where id = $1",
         values: [id],
       };
 
@@ -48,7 +48,7 @@ const SongController = {
       const { title, year, genre, performer, duration, albumid } = req.body;
 
       const query = {
-        text: "INSERT INTO song VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
+        text: "INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
         values: [id, title, year, genre, performer, duration, albumid],
       };
 
@@ -69,7 +69,7 @@ const SongController = {
       const { title, year, genre, performer, duration, albumid } = req.body;
 
       const query = {
-        text: "UPDATE song SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, albumid = $6 WHERE id = $7 RETURNING id",
+        text: "UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, albumid = $6 WHERE id = $7 RETURNING id",
         values: [title, year, genre, performer, duration, albumid, id],
       };
 
@@ -93,7 +93,7 @@ const SongController = {
       const { id } = req.params;
 
       const query = {
-        text: "DELETE FROM song WHERE id = $1 RETURNING id",
+        text: "DELETE FROM songs WHERE id = $1 RETURNING id",
         values: [id],
       };
 

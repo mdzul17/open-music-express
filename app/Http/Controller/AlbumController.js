@@ -11,7 +11,7 @@ const AlbumController = {
   getAlbums: async (req, res) => {
     try {
       const query = {
-        text: "SELECT * FROM album",
+        text: "SELECT * FROM albums",
       };
 
       const albums = await pool.query(query);
@@ -27,7 +27,7 @@ const AlbumController = {
       const { id } = req.params;
 
       const query = {
-        text: "SELECT * FROM album where id = $1",
+        text: "SELECT * FROM albums where id = $1",
         values: [id],
       };
 
@@ -49,7 +49,7 @@ const AlbumController = {
       const { name, year } = req.body;
 
       const query = {
-        text: "INSERT INTO album VALUES($1, $2, $3) RETURNING id",
+        text: "INSERT INTO albums VALUES($1, $2, $3) RETURNING id",
         values: [id, name, year],
       };
 
@@ -70,7 +70,7 @@ const AlbumController = {
       const { name, year } = req.body;
 
       const query = {
-        text: "UPDATE album SET name = $1, year = $2 WHERE id = $3 RETURNING id",
+        text: "UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id",
         values: [name, year, id],
       };
 
@@ -94,7 +94,7 @@ const AlbumController = {
       const { id } = req.params;
 
       const query = {
-        text: "DELETE FROM album WHERE id = $1 RETURNING id",
+        text: "DELETE FROM albums WHERE id = $1 RETURNING id",
         values: [id],
       };
 
