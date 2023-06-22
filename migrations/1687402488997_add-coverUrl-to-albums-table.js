@@ -2,6 +2,14 @@
 
 exports.shorthands = undefined;
 
-exports.up = pgm => {};
+exports.up = (pgm) => {
+  pgm.addColumn("albums", {
+    coverUrl: {
+      type: "VARCHAR(200)",
+    },
+  });
+};
 
-exports.down = pgm => {};
+exports.down = (pgm) => {
+  pgm.dropColumn("albums", "coverUrl");
+};

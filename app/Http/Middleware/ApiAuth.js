@@ -32,7 +32,7 @@ const ApiAuth = async (req, res, next) => {
   const user = await pool.query("SELECT * FROM users WHERE id = $1", [
     verify.id,
   ]);
-  if (!user.rows[0].length) {
+  if (!user.rows[0]) {
     return res.json({
       message: "user not found",
       status: 403,

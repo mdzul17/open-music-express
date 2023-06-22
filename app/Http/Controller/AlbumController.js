@@ -111,6 +111,26 @@ const AlbumController = {
       return Response.error(res, `Something went wrong`);
     }
   },
+  addAlbumCover: async (req, res) => {
+    try {
+      const cover = req.file;
+      const { id } = req.params;
+
+      const coverPath = await pool.query(
+        'UPDATE albums SET "coverUrl" = $1 WHERE id = $2 RETURNING id',
+        [cover.path, id]
+      );
+
+      if (!coverPath.rows[0]) {
+        return Response.error(res, "Failed to add cover to album");
+      }
+
+      return Response.success(res, coverPath.rows[0].id);
+    } catch (error) {
+      console.error(error);
+      return Response.error(res, "Something went wrong");
+    }
+  },
 };
 
 module.exports = AlbumController;
