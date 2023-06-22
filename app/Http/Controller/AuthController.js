@@ -1,6 +1,6 @@
-const Response = require("../Utils/Response");
+const Response = require("../Utils/HttpResponse");
 const Auth = require("../../Providers/Auth");
-const Randomstring = require("../Utils/Randomstring");
+const Randomstring = require("../Utils/RandomString");
 const bcrypt = require("bcrypt");
 const Mailer = require("../Service/Mailer");
 const jwt = require("jsonwebtoken");
@@ -19,15 +19,15 @@ const AuthController = {
 
       return Response.success(res, attempt);
     } catch (error) {
-      console.error(res.error);
+      console.error(res, error);
       return Response.error(res, error);
     }
   },
   register: async (req, res) => {
     try {
       const query = {
-        text: "SELECT * FROM users WHERE username = $1 LIMIT 1",
-        values: [req.body.username],
+        text: "SELECT * FROM users WHERE username = $1 OR email = $2 LIMIT 1",
+        values: [req.body.username, req.body.email],
       };
       const currentUser = await pool.query(query);
       if (!currentUser.rows.length) {
@@ -36,8 +36,8 @@ const AuthController = {
           return Response.error(res, "Something went wrong!");
         } else {
           const token = jwt.sign(
-            { user_id: currentUser.id },
-            process.env.JWT_SECRET
+            { user_id: registerUser },
+            process.env.ACCESS_TOKEN_KEY
           );
           const url =
             process.env.NODE_ENV === "production"
@@ -50,12 +50,12 @@ const AuthController = {
           );
         }
       } else {
-        return Response.error(res, "Email has been registered");
+        return Response.error(res, "Username or Email has been registered");
       }
 
       return Response.success(res, { success: true });
     } catch (error) {
-      console.error(res, error);
+      console.error(error);
       return Response.error(res, "Something went wrong!");
     }
   },

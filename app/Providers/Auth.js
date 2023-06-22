@@ -2,6 +2,7 @@ require("dotenv").config();
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
 const { Pool } = require("pg");
+const { nanoid } = require("nanoid");
 
 const pool = new Pool();
 
@@ -40,7 +41,7 @@ module.exports = {
 
     let userData = user.rows[0];
 
-    if (!userData.length) {
+    if (!userData) {
       return {
         message: "Couldn't find user in pool",
         error: true,
@@ -65,7 +66,6 @@ module.exports = {
       { expiresIn: 1000 * 60 * 30 }
     );
 
-    userData = userData.toJSON();
     userData.apiKey = apiKey;
 
     delete userData["id"];
@@ -87,6 +87,6 @@ module.exports = {
       return false;
     }
 
-    return true;
+    return user.rows[0].id;
   },
 };
