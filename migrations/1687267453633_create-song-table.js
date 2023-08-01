@@ -3,7 +3,7 @@
 exports.shorthands = undefined;
 
 exports.up = (pgm) => {
-  pgm.createTable("song", {
+  pgm.createTable("songs", {
     id: {
       type: "VARCHAR(50)",
       primaryKey: true,
@@ -33,13 +33,13 @@ exports.up = (pgm) => {
   });
 
   pgm.addConstraint(
-    "song",
-    "fk_song.albumid_album.id",
-    "FOREIGN KEY(albumid) REFERENCES album(id) ON DELETE CASCADE"
+    "songs",
+    "fk_song.albumid_albums.id",
+    "FOREIGN KEY(albumid) REFERENCES albums(id) ON DELETE CASCADE"
   );
 };
 
 exports.down = (pgm) => {
-  pgm.dropTable("song");
-  pgm.dropConstraint("song", "fk_song.albumid_album.id");
+  pgm.dropConstraint("songs", "fk_song.albumid_albums.id");
+  pgm.dropTable("songs");
 };
