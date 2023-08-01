@@ -1,21 +1,10 @@
-const { nanoid } = require("nanoid");
-const path = require("path");
-const fs = require("fs");
+const UserService = require("../Service/UserService");
 const Response = require("../Utils/HttpResponse");
-const { Pool } = require("pg");
-const bcrypt = require("bcrypt");
-
-const pool = new Pool();
 
 const UserController = {
   getUsers: async (req, res) => {
     try {
-      const query = {
-        text: "SELECT * FROM users",
-      };
-
-      const users = await pool.query(query);
-
+      const users = await UserService.getUsers();
       return Response.success(res, users.rows);
     } catch (error) {
       console.error(error);
@@ -25,14 +14,7 @@ const UserController = {
   getUserById: async (req, res) => {
     try {
       const { id } = req.params;
-
-      const query = {
-        text: "SELECT * FROM users where id = $1",
-        values: [id],
-      };
-
-      const user = await pool.query(query);
-
+      const user = await UserService.getUserById(id);
       if (!user.rows.length) {
         return Response.notFound(res, "No user found");
       }
@@ -45,17 +27,7 @@ const UserController = {
   },
   addUser: async (req, res) => {
     try {
-      const id = `user-${nanoid(16)}`;
-      const { username, fullname, password, email } = req.body;
-
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const query = {
-        text: "INSERT INTO users VALUES($1, $2, $3, $4, $5) RETURNING id",
-        values: [id, username, hashedPassword, fullname, email],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await UserService.addUser(req.body);
 
       return Response.success(
         res,
@@ -63,21 +35,15 @@ const UserController = {
       );
     } catch (error) {
       console.error(error);
+      if (error.constraint == "users_username_key") {
+        return Response.error(res, `Username already exists!`);
+      }
       return Response.error(res, `Something went wrong`);
     }
   },
   editUser: async (req, res) => {
     try {
-      const { id } = req.params;
-      const { username, fullname, password, email } = req.body;
-      const hashedPassword = await bcrypt.hash(password, 10);
-
-      const query = {
-        text: "UPDATE users SET username = $1, fullname = $2, password = $3, email = $4 WHERE id = $5 RETURNING id",
-        values: [username, fullname, hashedPassword, email, id],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await UserService.editUser({ ...req.params, ...req.body });
 
       if (!resp.rows.length) {
         return Response.notFound(res, "No user found");
@@ -94,19 +60,12 @@ const UserController = {
   },
   deleteUser: async (req, res) => {
     try {
-      const { id } = req.params;
-
-      const query = {
-        text: "DELETE FROM users WHERE id = $1 RETURNING id",
-        values: [id],
-      };
-
-      const user = await pool.query(query);
+      const user = await UserService.deleteUser(req.params.id);
 
       if (!user.rows.length) {
         return Response.notFound(
           res,
-          `User failed to be deleted, ${id} is not found`
+          `User failed to be deleted, ${req.params.id} is not found`
         );
       }
 
