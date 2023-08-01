@@ -1,26 +1,10 @@
 const Response = require("../Utils/HttpResponse");
-const Auth = require("../../Providers/Auth");
-const Randomstring = require("../Utils/RandomString");
-const bcrypt = require("bcrypt");
-const Mailer = require("../Service/Mailer");
-const jwt = require("jsonwebtoken");
-const { Pool } = require("pg");
-const { nanoid } = require("nanoid");
-
-const pool = new Pool();
+const PlaylistService = require("../Service/PlaylistService");
 
 const PlaylistController = {
   addPlaylist: async (req, res) => {
     try {
-      const { name, owner } = req.body;
-      const id = `playlist-${nanoid(16)}`;
-
-      const query = {
-        text: "INSERT INTO playlists VALUES($1, $2, $3) RETURNING id",
-        values: [id, name, owner],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await PlaylistService.addPlaylist(req.body);
 
       return Response.success(
         res,
@@ -33,11 +17,7 @@ const PlaylistController = {
   },
   getPlaylists: async (req, res) => {
     try {
-      const query = {
-        text: "SELECT * FROM playlists",
-      };
-
-      const playlists = await pool.query(query);
+      const playlists = await PlaylistService.getPlaylists();
 
       return Response.success(res, playlists.rows);
     } catch (error) {
