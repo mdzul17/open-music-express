@@ -1,19 +1,10 @@
-const { nanoid } = require("nanoid");
-const path = require("path");
-const fs = require("fs");
+const SongService = require("../Service/SongService");
 const Response = require("../Utils/HttpResponse");
-const { Pool } = require("pg");
-
-const pool = new Pool();
 
 const SongController = {
   getSongs: async (req, res) => {
     try {
-      const query = {
-        text: "SELECT * FROM songs",
-      };
-
-      const songs = await pool.query(query);
+      const songs = await SongService.getSongs();
 
       return Response.success(res, songs.rows);
     } catch (error) {
@@ -23,14 +14,7 @@ const SongController = {
   },
   getSongById: async (req, res) => {
     try {
-      const { id } = req.params;
-
-      const query = {
-        text: "SELECT * FROM songs where id = $1",
-        values: [id],
-      };
-
-      const song = await pool.query(query);
+      const song = await SongService.getSongById(req.params.id);
 
       if (!song.rows.length) {
         return Response.notFound(res, "No song found");
@@ -44,15 +28,7 @@ const SongController = {
   },
   addSong: async (req, res) => {
     try {
-      const id = `song-${nanoid(16)}`;
-      const { title, year, genre, performer, duration, albumid } = req.body;
-
-      const query = {
-        text: "INSERT INTO songs VALUES($1, $2, $3, $4, $5, $6, $7) RETURNING id",
-        values: [id, title, year, genre, performer, duration, albumid],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await SongService.addSong(req.body);
 
       return Response.success(
         res,
@@ -65,15 +41,7 @@ const SongController = {
   },
   editSong: async (req, res) => {
     try {
-      const { id } = req.params;
-      const { title, year, genre, performer, duration, albumid } = req.body;
-
-      const query = {
-        text: "UPDATE songs SET title = $1, year = $2, genre = $3, performer = $4, duration = $5, albumid = $6 WHERE id = $7 RETURNING id",
-        values: [title, year, genre, performer, duration, albumid, id],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await SongService.editSong({ ...req.body, ...req.params });
 
       if (!resp.rows.length) {
         return Response.notFound(res, "No song found");
@@ -90,14 +58,7 @@ const SongController = {
   },
   deleteSong: async (req, res) => {
     try {
-      const { id } = req.params;
-
-      const query = {
-        text: "DELETE FROM songs WHERE id = $1 RETURNING id",
-        values: [id],
-      };
-
-      const song = await pool.query(query);
+      const song = await SongService.deleteSong(req.params.id);
 
       if (!song.rows.length) {
         return Response.notFound(
