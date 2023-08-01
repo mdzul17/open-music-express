@@ -1,18 +1,10 @@
-const { nanoid } = require("nanoid");
-const path = require("path");
-const fs = require("fs");
+const AlbumService = require("../Service/AlbumService");
 const Response = require("../Utils/HttpResponse");
-const { Pool } = require("pg");
-const pool = new Pool();
 
 const AlbumController = {
   getAlbums: async (req, res) => {
     try {
-      const query = {
-        text: "SELECT * FROM albums",
-      };
-
-      const albums = await pool.query(query);
+      const albums = await AlbumService.getAlbums();
 
       return Response.success(res, albums.rows);
     } catch (error) {
@@ -22,14 +14,7 @@ const AlbumController = {
   },
   getAlbumById: async (req, res) => {
     try {
-      const { id } = req.params;
-
-      const query = {
-        text: "SELECT * FROM albums where id = $1",
-        values: [id],
-      };
-
-      const album = await pool.query(query);
+      const album = await AlbumService.getAlbumById(req.params.id);
 
       if (!album.rows.length) {
         return Response.notFound(res, "No albums found");
@@ -43,15 +28,7 @@ const AlbumController = {
   },
   addAlbum: async (req, res) => {
     try {
-      const id = `album-${nanoid(16)}`;
-      const { name, year } = req.body;
-
-      const query = {
-        text: "INSERT INTO albums VALUES($1, $2, $3) RETURNING id",
-        values: [id, name, year],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await AlbumService.addAlbum({ ...req.body });
 
       return Response.success(
         res,
@@ -64,15 +41,7 @@ const AlbumController = {
   },
   editAlbum: async (req, res) => {
     try {
-      const { id } = req.params;
-      const { name, year } = req.body;
-
-      const query = {
-        text: "UPDATE albums SET name = $1, year = $2 WHERE id = $3 RETURNING id",
-        values: [name, year, id],
-      };
-
-      const resp = await pool.query(query);
+      const resp = await AlbumService.editAlbum({ ...req.params, ...req.body });
 
       if (!resp.rows.length) {
         return Response.notFound(res, "No albums found");
@@ -89,14 +58,7 @@ const AlbumController = {
   },
   deleteAlbum: async (req, res) => {
     try {
-      const { id } = req.params;
-
-      const query = {
-        text: "DELETE FROM albums WHERE id = $1 RETURNING id",
-        values: [id],
-      };
-
-      const album = await pool.query(query);
+      const album = await AlbumService.deleteAlbum(req.params.id);
 
       if (!album.rows.length) {
         return Response.notFound(
@@ -113,13 +75,10 @@ const AlbumController = {
   },
   addAlbumCover: async (req, res) => {
     try {
-      const cover = req.file;
-      const { id } = req.params;
-
-      const coverPath = await pool.query(
-        'UPDATE albums SET "coverUrl" = $1 WHERE id = $2 RETURNING id',
-        [cover.path, id]
-      );
+      const coverPath = await AlbumService.addAlbumCover({
+        cover: req.file,
+        ...req.params,
+      });
 
       if (!coverPath.rows[0]) {
         return Response.error(res, "Failed to add cover to album");
